@@ -32,7 +32,7 @@ for (var i = 0; i < args.length; i++) {
 
   if (~arg.indexOf('--file-exts')) {
     exts = arg.split('=')[1].split('|').map(function(ext) {
-      if (ext[0] !== '.') ext += '.' + ext;
+      if (ext[0] !== '.') ext = '.' + ext;
       return ext;
     });
   }
@@ -94,15 +94,16 @@ function useDirectory() {
 function getFiles(dir) {
   var files = [];
   fs.readdirSync(dir).forEach(function(file) {
+    file = path.join(dir, file);
     var stat = fs.statSync(file);
 
     if (stat.isFile()) {
       var ext = path.extname(file);
       if (!exts || exts && exts && ~exts.indexOf(ext)) {
-        files.push(path.join(dir, file));
+        files.push(file);
       }
     } else if (stat.isDirectory(file)) {
-      files = files.concat(getFiles(path.join(dir, file)));
+      files = files.concat(getFiles(file));
     }
   });
 
