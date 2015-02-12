@@ -1,0 +1,111 @@
+#!/usr/bin/env node
+'use strict';
+
+var slice = Array.prototype.slice;
+var args = slice.call(process.argv, 2);
+var fs = require('fs');
+var path = require('path');
+var format = require('util').format;
+var iconv = require('iconv-lite');
+var isUtf8 = require('is-utf8');
+var root = process.cwd();
+var target, exts;
+
+// 用法
+if (args.length === 0 || args[0] === '-h') {
+  outputUsage();
+  process.exit(0);
+}
+
+// 版本
+if (args[0] === '-v') {
+  console.log(require('../package.json').version);
+  process.exit(0);
+}
+
+for (var i = 0; i < args.length; i++) {
+  var arg = args[i];
+  var file = path.resolve(root, arg);
+  if (fs.existsSync(file) && !target) {
+    target = file;
+  }
+
+  if (~arg.indexOf('--file-exts')) {
+    exts = arg.split('=')[1].split('|').map(function(ext) {
+      if (ext[0] !== '.') ext += '.' + ext;
+      return ext;
+    });
+  }
+}
+
+if (!target) {
+  console.error('%s 路径未指定或不存在!', target);
+  console.error('请确认路径是否正确，相对路径前需加.或..');
+  process.exit(1);
+}
+
+var isDir = fs.statSync(target).isDirectory();
+if (isDir && !useDirectory()) {
+  console.error('%s 是一个目录, 请指定-r或-R选项.', target);
+  process.exit(1);
+}
+
+// 获取文件列表
+if (isDir) {
+  target = getFiles(target);
+} else {
+  exts = [path.extname(target)];
+  target = [target];
+}
+
+// 转换编码
+target.forEach(function(file) {
+  var buf = fs.readFileSync(file);
+  if (!isUtf8(buf)) {
+    // 不是utf8，就当作gbk编码处理
+    var content = iconv.decode(buf, 'gbk');
+    fs.writeFileSync(file, content, { encoding: 'utf8' });
+  }
+});
+
+function outputUsage() {
+  console.log('Usage:');
+  console.log('    g2u [file] [-r dirname --file-exts=[ext]]');
+  console.log('');
+  console.log('Options:');
+  console.log('    -r|-R             在指定目录解析');
+  console.log('    --file-exts       指定特定文件后缀名,多后缀名以\'|\'分割,例如: --file-exts=js|java');
+  console.log('    -v                命令行版本');
+  console.log('    -h                用法说明');
+}
+
+function isRelativePath(path) {
+  return /^\.{1,2}\/?/.test(path);
+}
+
+function useDirectory() {
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] === '-r' || args[i] === '-R') {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getFiles(dir) {
+  var files = [];
+  fs.readdirSync(dir).forEach(function(file) {
+    var stat = fs.statSync(file);
+
+    if (stat.isFile()) {
+      var ext = path.extname(file);
+      if (!exts || exts && exts && ~exts.indexOf(ext)) {
+        files.push(path.join(dir, file));
+      }
+    } else if (stat.isDirectory(file)) {
+      files = files.concat(getFiles(path.join(dir, file)));
+    }
+  });
+
+  return files;
+}

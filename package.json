@@ -1,0 +1,19 @@
+{
+  "name": "g2u",
+  "version": "0.0.1",
+  "keywords": [
+    "gbk convert to utf8"
+  ],
+  "author": "luckydrq<drqzju@gmail.com>",
+  "dependencies": {
+    "iconv-lite": "~0.4.7",
+    "is-utf8": "~0.2.0"
+  },
+  "engines": {
+    "node": ">= 0.10.x"
+  },
+  "bin": {
+    "g2u": "./bin/g2u"
+  },
+  "preferGlobal": true
+}
