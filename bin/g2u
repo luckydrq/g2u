@@ -54,7 +54,6 @@ if (isDir && !useDirectory()) {
 if (isDir) {
   target = getFiles(target);
 } else {
-  exts = [path.extname(target)];
   target = [target];
 }
 
