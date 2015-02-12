@@ -1,4 +1,10 @@
-## A simple command line tool to convert GBK to UTF-8
+## GBK转换为UTF-8的命令行
+
+### 安装
+
+```$ tnpm install g2u -g```
+
+### 用法
 
 ```
 $ g2u
@@ -13,13 +19,13 @@ Options:
     -h                用法说明
 ```
 
-### 转换单个文件
+#### 转换单个文件
 
 ```
 $ g2u gbk_file
 ```
 
-### 转换指定目录下的所有文件（嵌套）
+#### 转换指定目录下的所有文件（嵌套）
 
 ```
 // 默认全部转换
